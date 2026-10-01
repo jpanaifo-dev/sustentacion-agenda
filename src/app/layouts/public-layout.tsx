@@ -18,7 +18,7 @@ export const PublicLayout: React.FC = () => {
             <span className="hidden md:inline text-slate-400">Iquitos, Loreto — Perú</span>
             <NavLink
               to="/admin"
-              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition-colors uppercase font-mono tracking-wider text-[10px] border border-slate-700 hover:border-amber-400/60 px-2 py-0.5"
+              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition-colors uppercase font-mono tracking-wider text-[10px] border border-slate-700 hover:border-amber-400/60 px-2 py-0.5 rounded-sm"
             >
               <Lock className="h-3 w-3" />
               <span>Acceso Administrativo</span>
@@ -31,7 +31,7 @@ export const PublicLayout: React.FC = () => {
       <header className="bg-white border-b-2 border-[#091E3A] sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 bg-[#091E3A] text-amber-400 flex items-center justify-center font-anton text-2xl border-2 border-amber-400 shrink-0">
+            <div className="h-12 w-12 bg-[#091E3A] text-amber-400 flex items-center justify-center font-anton text-2xl border-2 border-amber-400 shrink-0 rounded-sm">
               EPG
             </div>
             <div>
@@ -39,7 +39,7 @@ export const PublicLayout: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-anton text-[#091E3A] uppercase tracking-tight leading-none">
                   Agenda de Sustentaciones
                 </h1>
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-amber-400 text-slate-950 uppercase border border-amber-500">
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-amber-400 text-slate-950 uppercase border border-amber-500 rounded-sm">
                   OFICIAL
                 </span>
               </div>
@@ -50,13 +50,13 @@ export const PublicLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-none border-2 border-slate-300 hover:border-[#091E3A] text-xs h-9 font-semibold uppercase tracking-wider">
+            <Button asChild variant="outline" size="sm" className="rounded-sm border-2 border-slate-300 hover:border-[#091E3A] text-xs h-9 font-semibold uppercase tracking-wider">
               <NavLink to="/agenda">
                 <Calendar className="h-3.5 w-3.5 mr-1.5" />
                 <span>Ver Agenda</span>
               </NavLink>
             </Button>
-            <Button asChild variant="unap" size="sm" className="rounded-none bg-[#091E3A] hover:bg-slate-900 border-2 border-[#091E3A] text-amber-400 text-xs h-9 font-semibold uppercase tracking-wider">
+            <Button asChild variant="unap" size="sm" className="rounded-sm bg-[#091E3A] hover:bg-slate-900 border-2 border-[#091E3A] text-amber-400 text-xs h-9 font-semibold uppercase tracking-wider">
               <NavLink to="/admin">
                 <Lock className="h-3.5 w-3.5 mr-1.5" />
                 <span>Panel Interno</span>

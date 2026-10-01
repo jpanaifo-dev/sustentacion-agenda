@@ -128,21 +128,21 @@ export const PublicAgendaPage: React.FC = () => {
   return (
     <div className="space-y-6 w-full pb-12">
       {/* Editorial High-Impact Hero Banner */}
-      <section className="bg-[#091E3A] border-2 border-[#091E3A] text-white p-6 sm:p-10 relative overflow-hidden">
+      <section className="bg-[#091E3A] border-2 border-[#091E3A] text-white p-6 sm:p-10 relative overflow-hidden rounded-sm">
         {/* Solid architectural accent line */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#C59B27]" />
 
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="space-y-3 max-w-4xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-[#C59B27] text-slate-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider">
+              <span className="bg-[#C59B27] text-slate-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm">
                 UNAP · EPG
               </span>
-              <span className="border border-slate-700 bg-slate-900/80 text-slate-300 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider">
+              <span className="border border-slate-700 bg-slate-900/80 text-slate-300 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider rounded-sm">
                 PROGRAMACIÓN PÚBLICA OFICIAL
               </span>
-              <span className="border border-emerald-500/50 bg-emerald-950/60 text-emerald-300 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1">
-                <span className="h-1.5 w-1.5 bg-emerald-400 inline-block animate-pulse" />
+              <span className="border border-emerald-500/50 bg-emerald-950/60 text-emerald-300 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1 rounded-sm">
+                <span className="h-1.5 w-1.5 bg-emerald-400 inline-block animate-pulse rounded-full" />
                 EN TIEMPO REAL
               </span>
             </div>
@@ -158,7 +158,7 @@ export const PublicAgendaPage: React.FC = () => {
 
           {/* Metric KPI Block strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 lg:gap-3 shrink-0">
-            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px] rounded-sm">
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 TOTAL AGENDA
               </div>
@@ -170,7 +170,7 @@ export const PublicAgendaPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px] rounded-sm">
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 CONFIRMADAS
               </div>
@@ -182,7 +182,7 @@ export const PublicAgendaPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px] rounded-sm">
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 PRESENCIALES
               </div>
@@ -194,7 +194,7 @@ export const PublicAgendaPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px] rounded-sm">
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 VIRTUAL / HÍBRIDA
               </div>
@@ -209,8 +209,8 @@ export const PublicAgendaPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Control & Filter Strip - Sharp 90° corners, zero shadows */}
-      <section className="bg-white border-2 border-slate-900 p-4 sm:p-5">
+      {/* Control & Filter Strip - Subtle rounded-sm, zero shadows */}
+      <section className="bg-white border-2 border-slate-900 p-4 sm:p-5 rounded-sm">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
           {/* Search and Unit filters */}
           <div className="flex flex-1 flex-col sm:flex-row gap-3 items-stretch sm:items-center">
@@ -221,7 +221,7 @@ export const PublicAgendaPage: React.FC = () => {
                 placeholder="Buscar por tesis, código, tesista..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10 rounded-none border border-slate-300 bg-slate-50 text-slate-900 text-xs sm:text-sm font-medium focus:border-slate-900 focus:bg-white"
+                className="pl-9 h-10 rounded-sm border border-slate-300 bg-slate-50 text-slate-900 text-xs sm:text-sm font-medium focus:border-slate-900 focus:bg-white"
               />
               {search && (
                 <button
@@ -238,7 +238,7 @@ export const PublicAgendaPage: React.FC = () => {
               <select
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                className="w-full h-10 rounded-none border border-slate-300 bg-slate-50 px-3 text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white cursor-pointer"
+                className="w-full h-10 rounded-sm border border-slate-300 bg-slate-50 px-3 text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white cursor-pointer"
               >
                 <option value="ALL">TODAS LAS UNIDADES DE POSGRADO</option>
                 {units.map((u) => (
@@ -254,7 +254,7 @@ export const PublicAgendaPage: React.FC = () => {
               <select
                 value={selectedModality}
                 onChange={(e) => setSelectedModality(e.target.value)}
-                className="w-full h-10 rounded-none border border-slate-300 bg-slate-50 px-3 text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white cursor-pointer uppercase"
+                className="w-full h-10 rounded-sm border border-slate-300 bg-slate-50 px-3 text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white cursor-pointer uppercase"
               >
                 <option value="ALL">MODALIDAD: TODAS</option>
                 <option value="PRESENTIAL">PRESENCIAL</option>
@@ -268,7 +268,7 @@ export const PublicAgendaPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={resetFilters}
-                className="h-10 px-3 rounded-none border border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-mono uppercase"
+                className="h-10 px-3 rounded-sm border border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-mono uppercase"
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1" />
                 Limpiar
@@ -277,10 +277,10 @@ export const PublicAgendaPage: React.FC = () => {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 border-2 border-slate-900 p-0.5 bg-slate-100 self-start sm:self-auto shrink-0">
+          <div className="flex items-center gap-1 border-2 border-slate-900 p-0.5 bg-slate-100 self-start sm:self-auto shrink-0 rounded-sm">
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors ${
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors rounded-sm ${
                 viewMode === 'calendar'
                   ? 'bg-[#091E3A] text-amber-400 border border-[#091E3A]'
                   : 'bg-transparent text-slate-700 hover:text-slate-900'
@@ -291,7 +291,7 @@ export const PublicAgendaPage: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors ${
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors rounded-sm ${
                 viewMode === 'list'
                   ? 'bg-[#091E3A] text-amber-400 border border-[#091E3A]'
                   : 'bg-transparent text-slate-700 hover:text-slate-900'
@@ -306,7 +306,7 @@ export const PublicAgendaPage: React.FC = () => {
 
       {/* Main Content Area */}
       {isLoadingDefenses ? (
-        <div className="p-16 text-center bg-white border-2 border-slate-900">
+        <div className="p-16 text-center bg-white border-2 border-slate-900 rounded-sm">
           <div className="font-anton text-2xl text-slate-800 uppercase tracking-tight">
             CARGANDO PROGRAMACIÓN INSTITUCIONAL...
           </div>
@@ -315,7 +315,7 @@ export const PublicAgendaPage: React.FC = () => {
           </p>
         </div>
       ) : viewMode === 'calendar' ? (
-        <div className="bg-white border-2 border-slate-900 p-4 sm:p-6">
+        <div className="bg-white border-2 border-slate-900 p-4 sm:p-6 rounded-sm">
           {/* Calendar Header Indicator */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b-2 border-slate-200 gap-2">
             <div>
@@ -329,17 +329,17 @@ export const PublicAgendaPage: React.FC = () => {
 
             {/* Quick legend */}
             <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-emerald-600 bg-emerald-50 text-emerald-950 font-bold">
-                <span className="h-2 w-2 bg-emerald-600" /> CONFIRMADA
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-emerald-600 bg-emerald-50 text-emerald-950 font-bold rounded-sm">
+                <span className="h-2 w-2 bg-emerald-600 rounded-sm" /> CONFIRMADA
               </span>
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-blue-600 bg-blue-50 text-blue-950 font-bold">
-                <span className="h-2 w-2 bg-blue-600" /> REPROGRAMADA
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-blue-600 bg-blue-50 text-blue-950 font-bold rounded-sm">
+                <span className="h-2 w-2 bg-blue-600 rounded-sm" /> REPROGRAMADA
               </span>
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-purple-600 bg-purple-50 text-purple-950 font-bold">
-                <span className="h-2 w-2 bg-purple-600" /> COMPLETADA
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-purple-600 bg-purple-50 text-purple-950 font-bold rounded-sm">
+                <span className="h-2 w-2 bg-purple-600 rounded-sm" /> COMPLETADA
               </span>
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-slate-800 bg-slate-100 text-slate-900 font-bold">
-                <span className="h-2 w-2 bg-[#091E3A]" /> PROGRAMADA
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-slate-800 bg-slate-100 text-slate-900 font-bold rounded-sm">
+                <span className="h-2 w-2 bg-[#091E3A] rounded-sm" /> PROGRAMADA
               </span>
             </div>
           </div>
@@ -369,10 +369,10 @@ export const PublicAgendaPage: React.FC = () => {
           />
         </div>
       ) : (
-        /* List Mode View - Editorial Brutalist Cards */
+        /* List Mode View - Editorial Brutalist Cards with subtle rounded-sm */
         <div className="space-y-3">
           {filteredDefenses.length === 0 ? (
-            <div className="p-16 text-center bg-white border-2 border-slate-900">
+            <div className="p-16 text-center bg-white border-2 border-slate-900 rounded-sm">
               <div className="font-anton text-2xl text-slate-800 uppercase">
                 NO HAY SUSTENTACIONES REGISTRADAS CON ESTOS FILTROS
               </div>
@@ -383,7 +383,7 @@ export const PublicAgendaPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={resetFilters}
-                className="mt-4 rounded-none border-2 border-slate-900 font-mono text-xs uppercase"
+                className="mt-4 rounded-sm border-2 border-slate-900 font-mono text-xs uppercase"
               >
                 Restablecer Filtros
               </Button>
@@ -400,11 +400,11 @@ export const PublicAgendaPage: React.FC = () => {
                   <article
                     key={defense.id}
                     onClick={() => setSelectedDefense(defense)}
-                    className="bg-white border-2 border-slate-200 hover:border-[#091E3A] transition-colors cursor-pointer p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                    className="bg-white border-2 border-slate-200 hover:border-[#091E3A] transition-colors cursor-pointer p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-sm"
                   >
                     {/* Left Date Block */}
                     <div className="flex items-center gap-4 sm:gap-6 border-b lg:border-b-0 lg:border-r border-slate-200 pb-3 lg:pb-0 lg:pr-6 shrink-0">
-                      <div className="bg-[#091E3A] text-white p-2.5 sm:p-3 text-center min-w-[76px] sm:min-w-[84px] border-2 border-[#091E3A]">
+                      <div className="bg-[#091E3A] text-white p-2.5 sm:p-3 text-center min-w-[76px] sm:min-w-[84px] border-2 border-[#091E3A] rounded-sm">
                         <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest leading-none">
                           {weekdayStr}
                         </div>
@@ -430,7 +430,7 @@ export const PublicAgendaPage: React.FC = () => {
                           </span>
                         </div>
                         <div className="pt-0.5">
-                          <span className="inline-block border border-slate-300 bg-slate-100 text-slate-700 text-[10px] font-mono uppercase font-bold px-1.5 py-0.2">
+                          <span className="inline-block border border-slate-300 bg-slate-100 text-slate-700 text-[10px] font-mono uppercase font-bold px-1.5 py-0.2 rounded-sm">
                             MODALIDAD: {defense.modality}
                           </span>
                         </div>
@@ -440,7 +440,7 @@ export const PublicAgendaPage: React.FC = () => {
                     {/* Middle Core Thesis Info */}
                     <div className="flex-1 space-y-2 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-white bg-[#091E3A] px-2 py-0.5 border border-[#091E3A]">
+                        <span className="font-mono text-xs font-bold text-white bg-[#091E3A] px-2 py-0.5 border border-[#091E3A] rounded-sm">
                           {defense.code}
                         </span>
                         <StatusBadge status={defense.status} />
@@ -489,7 +489,7 @@ export const PublicAgendaPage: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="rounded-none border-2 border-slate-900 hover:bg-slate-900 hover:text-white text-xs font-bold uppercase tracking-wider h-9"
+                        className="rounded-sm border-2 border-slate-900 hover:bg-slate-900 hover:text-white text-xs font-bold uppercase tracking-wider h-9"
                       >
                         Ver Ficha Completa
                       </Button>
@@ -502,14 +502,14 @@ export const PublicAgendaPage: React.FC = () => {
         </div>
       )}
 
-      {/* Public Defense Detail Modal - Sharp architectural layout */}
+      {/* Public Defense Detail Modal - Subtle rounded-sm architectural layout */}
       {selectedDefense && (
         <Dialog open={!!selectedDefense} onOpenChange={() => setSelectedDefense(null)}>
-          <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0 rounded-none border-2 border-slate-900 bg-white">
+          <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0 rounded-sm border-2 border-slate-900 bg-white">
             {/* Modal Header */}
-            <div className="bg-[#091E3A] text-white p-5 border-b-2 border-amber-400">
+            <div className="bg-[#091E3A] text-white p-5 border-b-2 border-amber-400 rounded-t-sm">
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="font-mono text-xs font-bold bg-amber-400 text-slate-950 px-2 py-0.5 uppercase">
+                <span className="font-mono text-xs font-bold bg-amber-400 text-slate-950 px-2 py-0.5 uppercase rounded-sm">
                   {selectedDefense.code}
                 </span>
                 <StatusBadge status={selectedDefense.status} />
@@ -532,7 +532,7 @@ export const PublicAgendaPage: React.FC = () => {
                 <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
                   DATOS DE CONVOCATORIA Y LOGÍSTICA
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 border border-slate-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 border border-slate-200 rounded-sm">
                   <div>
                     <div className="text-[11px] font-mono text-slate-500 uppercase">Fecha</div>
                     <div className="font-bold text-slate-950 text-sm mt-0.5">
@@ -562,9 +562,9 @@ export const PublicAgendaPage: React.FC = () => {
 
               {/* Virtual Access Box if virtual or hybrid */}
               {selectedDefense.virtual_url && (
-                <div className="border-2 border-blue-900 bg-blue-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="border-2 border-blue-900 bg-blue-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-sm">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-blue-900 text-white flex items-center justify-center shrink-0">
+                    <div className="h-10 w-10 bg-blue-900 text-white flex items-center justify-center shrink-0 rounded-sm">
                       <Video className="h-5 w-5" />
                     </div>
                     <div>
@@ -580,7 +580,7 @@ export const PublicAgendaPage: React.FC = () => {
                     href={selectedDefense.virtual_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold uppercase tracking-wider border border-blue-900 transition-colors"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold uppercase tracking-wider border border-blue-900 transition-colors rounded-sm"
                   >
                     <span>Ingresar a la Sala</span>
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -593,7 +593,7 @@ export const PublicAgendaPage: React.FC = () => {
                 <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
                   SUSTENTANTE(S) / CANDIDATO(S) AL GRADO
                 </div>
-                <div className="border border-slate-200 divide-y divide-slate-200">
+                <div className="border border-slate-200 divide-y divide-slate-200 rounded-sm overflow-hidden">
                   {(selectedDefense.participants || [])
                     .filter((p) => p.participant_type === 'STUDENT')
                     .map((s) => (
@@ -609,7 +609,7 @@ export const PublicAgendaPage: React.FC = () => {
                             )}
                           </div>
                         </div>
-                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-300 bg-slate-100 text-slate-800">
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-300 bg-slate-100 text-slate-800 rounded-sm">
                           Tesista
                         </span>
                       </div>
@@ -622,7 +622,7 @@ export const PublicAgendaPage: React.FC = () => {
                 <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
                   JURADO CALIFICADOR DESIGNADO
                 </div>
-                <div className="border border-slate-200 divide-y divide-slate-200">
+                <div className="border border-slate-200 divide-y divide-slate-200 rounded-sm overflow-hidden">
                   {(selectedDefense.participants || [])
                     .filter((p) => p.participant_type === 'JUROR')
                     .map((j) => (
@@ -633,14 +633,14 @@ export const PublicAgendaPage: React.FC = () => {
                             <span className="font-bold text-slate-900 text-sm">
                               {j.person.first_name} {j.person.last_name}
                             </span>
-                            {j.person.institution && (
+                            {j.person.email && (
                               <div className="text-xs font-mono text-slate-500">
-                                {j.person.institution}
+                                {j.person.email}
                               </div>
                             )}
                           </div>
                         </div>
-                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-900 bg-slate-900 text-amber-300">
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-900 bg-slate-900 text-amber-300 rounded-sm">
                           {j.role || 'Miembro de Jurado'}
                         </span>
                       </div>
@@ -654,7 +654,7 @@ export const PublicAgendaPage: React.FC = () => {
                   <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
                     ASESOR(A) DE TESIS
                   </div>
-                  <div className="border border-slate-200 divide-y divide-slate-200">
+                  <div className="border border-slate-200 divide-y divide-slate-200 rounded-sm overflow-hidden">
                     {(selectedDefense.participants || [])
                       .filter((p) => p.participant_type === 'ADVISOR')
                       .map((a) => (
@@ -662,7 +662,7 @@ export const PublicAgendaPage: React.FC = () => {
                           <span className="font-bold text-slate-900 text-sm">
                             {a.person.first_name} {a.person.last_name}
                           </span>
-                          <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-300 bg-slate-100 text-slate-800">
+                          <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-300 bg-slate-100 text-slate-800 rounded-sm">
                             Asesor Principal
                           </span>
                         </div>
@@ -673,12 +673,12 @@ export const PublicAgendaPage: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end">
+            <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end rounded-b-sm">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedDefense(null)}
-                className="rounded-none border-2 border-slate-900 text-xs font-mono uppercase font-bold"
+                className="rounded-sm border-2 border-slate-900 text-xs font-mono uppercase font-bold"
               >
                 Cerrar Detalle
               </Button>
