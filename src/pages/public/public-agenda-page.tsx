@@ -18,16 +18,33 @@ import {
   CalendarDays,
   ExternalLink,
   RotateCcw,
-  CheckCircle2,
-  Building,
+  ChevronLeft,
+  ChevronRight,
   GraduationCap,
+  CalendarCheck,
+  Building,
+  CheckCircle2,
   Sparkles,
+  ArrowRight,
+  Info,
 } from 'lucide-react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
-import esLocale from '@fullcalendar/core/locales/es';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  isToday,
+  addDays,
+  subDays,
+  parseISO,
+} from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
   Dialog,
   DialogContent,
@@ -49,8 +66,12 @@ function parseDateParts(dateStr: string) {
   }
 }
 
+type ViewMode = 'month' | 'day' | 'list';
+
 export const PublicAgendaPage: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [search, setSearch] = useState('');
   const [selectedUnit, setSelectedUnit] = useState<string>('ALL');
   const [selectedModality, setSelectedModality] = useState<string>('ALL');
@@ -86,6 +107,17 @@ export const PublicAgendaPage: React.FC = () => {
     });
   }, [defenses, selectedUnit, selectedModality, search]);
 
+  // Map defenses by scheduled_date (YYYY-MM-DD)
+  const defensesByDate = useMemo(() => {
+    const map = new Map<string, DefenseWithRelations[]>();
+    filteredDefenses.forEach((d) => {
+      const existing = map.get(d.scheduled_date) || [];
+      existing.push(d);
+      map.set(d.scheduled_date, existing);
+    });
+    return map;
+  }, [filteredDefenses]);
+
   // Statistics counters
   const stats = useMemo(() => {
     const total = defenses.length;
@@ -95,29 +127,36 @@ export const PublicAgendaPage: React.FC = () => {
     return { total, confirmed, virtual, presencial };
   }, [defenses]);
 
-  // Prepare events for FullCalendar
-  const calendarEvents = useMemo(() => {
-    return filteredDefenses.map((d) => {
-      const student = d.participants?.find((p) => p.participant_type === 'STUDENT');
-      const studentName = student ? ` (${student.person.first_name} ${student.person.last_name})` : '';
+  // Navigation handlers
+  const handlePrev = () => {
+    if (viewMode === 'month') {
+      setCurrentDate((prev) => subMonths(prev, 1));
+    } else if (viewMode === 'day') {
+      setSelectedDay((prev) => {
+        const next = subDays(prev, 1);
+        setCurrentDate(next);
+        return next;
+      });
+    }
+  };
 
-      let color = '#091E3A';
-      if (d.status === 'CONFIRMED') color = '#047857';
-      if (d.status === 'RESCHEDULED') color = '#1D4ED8';
-      if (d.status === 'COMPLETED') color = '#581C87';
+  const handleNext = () => {
+    if (viewMode === 'month') {
+      setCurrentDate((prev) => addMonths(prev, 1));
+    } else if (viewMode === 'day') {
+      setSelectedDay((prev) => {
+        const next = addDays(prev, 1);
+        setCurrentDate(next);
+        return next;
+      });
+    }
+  };
 
-      return {
-        id: d.id,
-        title: `${d.code} · ${d.title}${studentName}`,
-        start: `${d.scheduled_date}T${d.start_time}`,
-        end: `${d.scheduled_date}T${d.estimated_end_time}`,
-        backgroundColor: color,
-        borderColor: '#000000',
-        textColor: '#FFFFFF',
-        extendedProps: { defense: d },
-      };
-    });
-  }, [filteredDefenses]);
+  const handleToday = () => {
+    const now = new Date();
+    setCurrentDate(now);
+    setSelectedDay(now);
+  };
 
   const resetFilters = () => {
     setSearch('');
@@ -125,8 +164,31 @@ export const PublicAgendaPage: React.FC = () => {
     setSelectedModality('ALL');
   };
 
+  // Month grid days
+  const monthDays = useMemo(() => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(monthStart);
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday start
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: startDate, end: endDate });
+  }, [currentDate]);
+
+  // Defenses on selected day for "Diario" view
+  const selectedDayKey = format(selectedDay, 'yyyy-MM-dd');
+  const defensesForSelectedDay = useMemo(() => {
+    const list = defensesByDate.get(selectedDayKey) || [];
+    return [...list].sort((a, b) => a.start_time.localeCompare(b.start_time));
+  }, [defensesByDate, selectedDayKey]);
+
+  // Mini week strip for "Diario" view
+  const currentWeekDays = useMemo(() => {
+    const start = startOfWeek(selectedDay, { weekStartsOn: 1 });
+    const end = endOfWeek(selectedDay, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start, end });
+  }, [selectedDay]);
+
   return (
-    <div className="space-y-6 w-full pb-12">
+    <div className="space-y-6 w-full pb-12 font-sans">
       {/* Editorial High-Impact Hero Banner */}
       <section className="bg-[#091E3A] border-2 border-[#091E3A] text-white p-6 sm:p-10 relative overflow-hidden rounded-sm">
         {/* Solid architectural accent line */}
@@ -147,7 +209,7 @@ export const PublicAgendaPage: React.FC = () => {
               </span>
             </div>
 
-            <h1 className="font-anton text-4xl sm:text-6xl lg:text-7xl uppercase text-white tracking-tight leading-[0.9]">
+            <h1 className="font-extrabold text-3xl sm:text-5xl lg:text-6xl uppercase text-white tracking-tight leading-tight">
               AGENDA DE SUSTENTACIONES
             </h1>
 
@@ -162,7 +224,7 @@ export const PublicAgendaPage: React.FC = () => {
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 TOTAL AGENDA
               </div>
-              <div className="font-anton text-3xl sm:text-4xl text-white mt-1 leading-none">
+              <div className="font-bold text-2xl sm:text-3xl text-white mt-1 leading-none">
                 {stats.total.toString().padStart(2, '0')}
               </div>
               <div className="text-[10px] font-mono text-amber-400 mt-1 uppercase">
@@ -174,7 +236,7 @@ export const PublicAgendaPage: React.FC = () => {
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 CONFIRMADAS
               </div>
-              <div className="font-anton text-3xl sm:text-4xl text-emerald-400 mt-1 leading-none">
+              <div className="font-bold text-2xl sm:text-3xl text-emerald-400 mt-1 leading-none">
                 {stats.confirmed.toString().padStart(2, '0')}
               </div>
               <div className="text-[10px] font-mono text-emerald-300 mt-1 uppercase">
@@ -186,7 +248,7 @@ export const PublicAgendaPage: React.FC = () => {
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 PRESENCIALES
               </div>
-              <div className="font-anton text-3xl sm:text-4xl text-blue-400 mt-1 leading-none">
+              <div className="font-bold text-2xl sm:text-3xl text-blue-400 mt-1 leading-none">
                 {stats.presencial.toString().padStart(2, '0')}
               </div>
               <div className="text-[10px] font-mono text-slate-400 mt-1 uppercase">
@@ -198,7 +260,7 @@ export const PublicAgendaPage: React.FC = () => {
               <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
                 VIRTUAL / HÍBRIDA
               </div>
-              <div className="font-anton text-3xl sm:text-4xl text-amber-300 mt-1 leading-none">
+              <div className="font-bold text-2xl sm:text-3xl text-amber-300 mt-1 leading-none">
                 {stats.virtual.toString().padStart(2, '0')}
               </div>
               <div className="text-[10px] font-mono text-slate-400 mt-1 uppercase">
@@ -212,11 +274,11 @@ export const PublicAgendaPage: React.FC = () => {
       {/* Control & Filter Strip - Subtle rounded-sm, zero shadows */}
       <section className="bg-white border-2 border-slate-900 p-4 sm:p-5 rounded-sm">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
-          {/* Search and Unit filters */}
+          {/* Search, Unit, and Modality filters */}
           <div className="flex flex-1 flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
+              <Search className="h-4 w-4 absolute left-3 top-3 text-slate-500" />
               <Input
                 placeholder="Buscar por tesis, código, tesista..."
                 value={search}
@@ -276,18 +338,32 @@ export const PublicAgendaPage: React.FC = () => {
             )}
           </div>
 
-          {/* View Mode Toggle */}
+          {/* View Mode Switcher (Mes / Diario / Agenda) */}
           <div className="flex items-center gap-1 border-2 border-slate-900 p-0.5 bg-slate-100 self-start sm:self-auto shrink-0 rounded-sm">
             <button
-              onClick={() => setViewMode('calendar')}
+              onClick={() => setViewMode('month')}
               className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors rounded-sm ${
-                viewMode === 'calendar'
+                viewMode === 'month'
                   ? 'bg-[#091E3A] text-amber-400 border border-[#091E3A]'
                   : 'bg-transparent text-slate-700 hover:text-slate-900'
               }`}
             >
               <CalendarDays className="h-4 w-4" />
-              <span>Calendario</span>
+              <span>Mes</span>
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('day');
+                setSelectedDay(currentDate);
+              }}
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors rounded-sm ${
+                viewMode === 'day'
+                  ? 'bg-[#091E3A] text-amber-400 border border-[#091E3A]'
+                  : 'bg-transparent text-slate-700 hover:text-slate-900'
+              }`}
+            >
+              <Clock className="h-4 w-4" />
+              <span>Diario</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -298,82 +374,426 @@ export const PublicAgendaPage: React.FC = () => {
               }`}
             >
               <List className="h-4 w-4" />
-              <span>Listado ({filteredDefenses.length})</span>
+              <span>Agenda ({filteredDefenses.length})</span>
             </button>
           </div>
         </div>
       </section>
 
-      {/* Main Content Area */}
+      {/* Date Navigation Bar for Month and Day Views */}
+      {viewMode !== 'list' && (
+        <section className="bg-white border-2 border-slate-900 p-4 rounded-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrev}
+              className="h-9 w-9 p-0 rounded-sm border-2 border-slate-900 hover:bg-[#091E3A] hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToday}
+              className="h-9 px-3 rounded-sm border-2 border-slate-900 font-mono text-xs font-bold uppercase hover:bg-[#091E3A] hover:text-white"
+            >
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNext}
+              className="h-9 w-9 p-0 rounded-sm border-2 border-slate-900 hover:bg-[#091E3A] hover:text-white"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Current Period Display in Poppins font */}
+          <div className="text-center sm:text-left">
+            <div className="font-bold text-2xl sm:text-3xl text-[#091E3A] uppercase tracking-tight leading-none">
+              {viewMode === 'month'
+                ? format(currentDate, 'MMMM yyyy', { locale: es })
+                : format(selectedDay, 'EEEE, d MMMM yyyy', { locale: es })}
+            </div>
+            <div className="text-[11px] font-mono text-slate-500 uppercase mt-0.5">
+              {viewMode === 'month'
+                ? `Vista mensual institucional · ${filteredDefenses.length} sustentaciones programadas`
+                : `Programación diaria · ${defensesForSelectedDay.length} sustentaciones para esta jornada`}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 text-[10px] font-mono">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 border border-emerald-600 bg-emerald-50 text-emerald-950 font-bold rounded-sm">
+              <span className="h-2 w-2 bg-emerald-600 rounded-sm" /> CONFIRMADA
+            </span>
+            <span className="flex items-center gap-1.5 px-2 py-0.5 border border-blue-600 bg-blue-50 text-blue-950 font-bold rounded-sm">
+              <span className="h-2 w-2 bg-blue-600 rounded-sm" /> REPROGRAMADA
+            </span>
+            <span className="flex items-center gap-1.5 px-2 py-0.5 border border-purple-600 bg-purple-50 text-purple-950 font-bold rounded-sm">
+              <span className="h-2 w-2 bg-purple-600 rounded-sm" /> COMPLETADA
+            </span>
+          </div>
+        </section>
+      )}
+
+      {/* Main Content Area: 100% Bespoke Month Grid, Daily Schedule, or Agenda List */}
       {isLoadingDefenses ? (
         <div className="p-16 text-center bg-white border-2 border-slate-900 rounded-sm">
-          <div className="font-anton text-2xl text-slate-800 uppercase tracking-tight">
+          <div className="font-bold text-xl text-slate-800 uppercase tracking-tight">
             CARGANDO PROGRAMACIÓN INSTITUCIONAL...
           </div>
           <p className="text-xs font-mono text-slate-500 mt-2 uppercase">
             Sincronizando con base de datos de la Escuela de Postgrado UNAP
           </p>
         </div>
-      ) : viewMode === 'calendar' ? (
-        <div className="bg-white border-2 border-slate-900 p-4 sm:p-6 rounded-sm">
-          {/* Calendar Header Indicator */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b-2 border-slate-200 gap-2">
-            <div>
-              <h2 className="font-anton text-2xl sm:text-3xl uppercase text-[#091E3A] leading-none">
-                VISTA CALENDARIO MENSUAL / SEMANAL
-              </h2>
-              <p className="text-xs font-mono text-slate-500 uppercase mt-0.5">
-                Haga clic sobre cualquier evento para consultar el jurado, lugar o sala virtual
-              </p>
-            </div>
+      ) : viewMode === 'month' ? (
+        /* ========================================================================= */
+        /* 1. BESPOKE CUSTOM MONTH VIEW (Zero external library, full editorial grid) */
+        /* ========================================================================= */
+        <div className="bg-white border-2 border-slate-900 rounded-sm overflow-hidden">
+          {/* Day of Week Headers */}
+          <div className="grid grid-cols-7 bg-[#091E3A] border-b-2 border-slate-900 text-white text-center font-mono text-xs font-bold uppercase tracking-wider py-2.5">
+            <div>Lunes</div>
+            <div>Martes</div>
+            <div>Miércoles</div>
+            <div>Jueves</div>
+            <div>Viernes</div>
+            <div className="text-amber-400">Sábado</div>
+            <div className="text-amber-400">Domingo</div>
+          </div>
 
-            {/* Quick legend */}
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-emerald-600 bg-emerald-50 text-emerald-950 font-bold rounded-sm">
-                <span className="h-2 w-2 bg-emerald-600 rounded-sm" /> CONFIRMADA
-              </span>
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-blue-600 bg-blue-50 text-blue-950 font-bold rounded-sm">
-                <span className="h-2 w-2 bg-blue-600 rounded-sm" /> REPROGRAMADA
-              </span>
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-purple-600 bg-purple-50 text-purple-950 font-bold rounded-sm">
-                <span className="h-2 w-2 bg-purple-600 rounded-sm" /> COMPLETADA
-              </span>
-              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-slate-800 bg-slate-100 text-slate-900 font-bold rounded-sm">
-                <span className="h-2 w-2 bg-[#091E3A] rounded-sm" /> PROGRAMADA
-              </span>
+          {/* Month Days 7x5 or 7x6 Grid */}
+          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-200 border-b border-slate-200">
+            {monthDays.map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const dayDefenses = defensesByDate.get(dateKey) || [];
+              const isCurrMonth = isSameMonth(day, currentDate);
+              const isCurrentDay = isToday(day);
+              const isSelected = isSameDay(day, selectedDay);
+
+              return (
+                <div
+                  key={dateKey}
+                  onClick={() => {
+                    setSelectedDay(day);
+                  }}
+                  className={`min-h-[120px] sm:min-h-[140px] p-1.5 sm:p-2.5 transition-colors flex flex-col justify-between cursor-pointer ${
+                    !isCurrMonth ? 'bg-slate-50/70 text-slate-400' : 'bg-white text-slate-900'
+                  } ${isCurrentDay ? 'bg-amber-50/40 ring-2 ring-inset ring-amber-400' : ''} ${
+                    isSelected ? 'ring-2 ring-inset ring-[#091E3A]' : ''
+                  } hover:bg-slate-100/70`}
+                >
+                  {/* Day cell top bar */}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span
+                      className={`font-bold text-lg sm:text-xl leading-none ${
+                        isCurrentDay ? 'text-[#091E3A]' : isCurrMonth ? 'text-slate-800' : 'text-slate-400'
+                      }`}
+                    >
+                      {format(day, 'd')}
+                    </span>
+
+                    {isCurrentDay && (
+                      <span className="font-mono text-[9px] font-bold bg-[#C59B27] text-slate-950 px-1 py-0.2 rounded-sm uppercase">
+                        Hoy
+                      </span>
+                    )}
+
+                    {dayDefenses.length > 0 && !isCurrentDay && (
+                      <span className="font-mono text-[9px] font-bold bg-[#091E3A] text-amber-400 px-1 py-0.2 rounded-sm">
+                        {dayDefenses.length}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Defense pills inside the day cell */}
+                  <div className="space-y-1 flex-1 overflow-hidden">
+                    {dayDefenses.slice(0, 3).map((defense) => {
+                      let statusBorder = 'border-slate-900 bg-slate-900 text-white';
+                      if (defense.status === 'CONFIRMED') {
+                        statusBorder = 'border-emerald-700 bg-emerald-900 text-emerald-100';
+                      } else if (defense.status === 'RESCHEDULED') {
+                        statusBorder = 'border-blue-700 bg-blue-900 text-blue-100';
+                      } else if (defense.status === 'COMPLETED') {
+                        statusBorder = 'border-purple-700 bg-purple-900 text-purple-100';
+                      }
+
+                      return (
+                        <div
+                          key={defense.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDefense(defense);
+                          }}
+                          title={`${defense.code}: ${defense.title}`}
+                          className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-medium truncate rounded-sm border cursor-pointer hover:opacity-90 flex items-center gap-1 ${statusBorder}`}
+                        >
+                          <span className="font-mono text-[9px] font-bold opacity-80 shrink-0">
+                            {formatTime(defense.start_time).replace(/:\d\d /, ' ')}
+                          </span>
+                          <span className="truncate">{defense.code}</span>
+                        </div>
+                      );
+                    })}
+
+                    {dayDefenses.length > 3 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDay(day);
+                          setViewMode('day');
+                        }}
+                        className="text-[10px] font-mono font-bold text-[#091E3A] hover:underline block text-left"
+                      >
+                        +{dayDefenses.length - 3} más (Ver diario)
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Bottom Day Action Shortcut */}
+                  <div className="pt-1 text-right">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDay(day);
+                        setViewMode('day');
+                      }}
+                      className="text-[9px] font-mono text-slate-400 hover:text-slate-900 uppercase tracking-wider"
+                    >
+                      Ver día →
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : viewMode === 'day' ? (
+        /* ========================================================================= */
+        /* 2. BESPOKE CUSTOM DAILY VIEW ("DIARIO" timeline with hour-by-hour layout) */
+        /* ========================================================================= */
+        <div className="space-y-4">
+          {/* Mini week calendar strip for fast day selection */}
+          <div className="bg-white border-2 border-slate-900 p-3 rounded-sm flex items-center justify-between gap-2 overflow-x-auto">
+            <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest px-2 shrink-0 hidden md:block">
+              SEMANA ACTUAL:
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-around">
+              {currentWeekDays.map((day) => {
+                const dateKey = format(day, 'yyyy-MM-dd');
+                const count = (defensesByDate.get(dateKey) || []).length;
+                const isSelected = isSameDay(day, selectedDay);
+                const isCurrentDay = isToday(day);
+
+                return (
+                  <button
+                    key={dateKey}
+                    onClick={() => setSelectedDay(day)}
+                    className={`flex-1 py-2 px-2 text-center rounded-sm border-2 transition-all min-w-[50px] ${
+                      isSelected
+                        ? 'border-[#091E3A] bg-[#091E3A] text-white'
+                        : isCurrentDay
+                        ? 'border-amber-400 bg-amber-50 text-slate-900'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    <div
+                      className={`text-[10px] font-mono font-bold uppercase ${
+                        isSelected ? 'text-amber-400' : 'text-slate-500'
+                      }`}
+                    >
+                      {format(day, 'EEE', { locale: es })}
+                    </div>
+                    <div className="font-bold text-lg leading-none mt-1">
+                      {format(day, 'd')}
+                    </div>
+                    {count > 0 && (
+                      <div className="mt-1 flex justify-center">
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            isSelected ? 'bg-amber-400' : 'bg-emerald-600'
+                          }`}
+                        />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
-            initialView="dayGridMonth"
-            locale={esLocale}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth',
-            }}
-            events={calendarEvents}
-            eventClick={(info) => {
-              const defense = info.event.extendedProps.defense;
-              setSelectedDefense(defense);
-            }}
-            height="auto"
-            buttonText={{
-              today: 'Hoy',
-              month: 'Mes',
-              week: 'Semana',
-              day: 'Día',
-              list: 'Lista',
-            }}
-          />
+          {/* Daily Schedule Board */}
+          <div className="bg-white border-2 border-slate-900 rounded-sm overflow-hidden">
+            {/* Day Header Banner */}
+            <div className="bg-[#091E3A] text-white p-5 border-b-2 border-amber-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-mono text-amber-400 uppercase tracking-widest">
+                  CRONOGRAMA DE LA JORNADA
+                </div>
+                <h2 className="font-bold text-2xl sm:text-3xl uppercase text-white mt-0.5 leading-tight">
+                  {format(selectedDay, 'EEEE, d MMMM yyyy', { locale: es })}
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold px-2.5 py-1 bg-[#061528] border border-slate-700 text-slate-200 rounded-sm">
+                  {defensesForSelectedDay.length} Sustentaciones
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setViewMode('month')}
+                  className="rounded-sm border-2 border-slate-700 bg-white text-slate-900 hover:bg-slate-100 text-xs font-mono uppercase"
+                >
+                  Volver al Mes
+                </Button>
+              </div>
+            </div>
+
+            {/* Daily Schedule List */}
+            {defensesForSelectedDay.length === 0 ? (
+              <div className="p-16 text-center">
+                <CalendarCheck className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                <div className="font-bold text-xl text-slate-800 uppercase">
+                  NO HAY SUSTENTACIONES PROGRAMADAS PARA ESTE DÍA
+                </div>
+                <p className="text-xs font-mono text-slate-500 mt-2 uppercase">
+                  Puede consultar los demás días de la semana con la barra superior o volver al calendario mensual.
+                </p>
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleToday}
+                    className="rounded-sm border-2 border-slate-900 font-mono text-xs uppercase"
+                  >
+                    Ir al día de Hoy
+                  </Button>
+                  <Button
+                    variant="unap"
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-sm font-mono text-xs uppercase"
+                  >
+                    Ver todas en Agenda
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-200">
+                {defensesForSelectedDay.map((defense) => {
+                  const students = (defense.participants || []).filter((p) => p.participant_type === 'STUDENT');
+                  const jurors = (defense.participants || []).filter((p) => p.participant_type === 'JUROR');
+                  const advisors = (defense.participants || []).filter((p) => p.participant_type === 'ADVISOR');
+
+                  return (
+                    <div
+                      key={defense.id}
+                      onClick={() => setSelectedDefense(defense)}
+                      className="p-5 hover:bg-slate-50 transition-colors cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5"
+                    >
+                      {/* Left Time Box */}
+                      <div className="flex items-center gap-4 lg:w-64 shrink-0 border-b lg:border-b-0 pb-3 lg:pb-0">
+                        <div className="bg-[#091E3A] text-white p-3 text-center min-w-[80px] rounded-sm border-2 border-[#091E3A]">
+                          <Clock className="h-4 w-4 text-amber-400 mx-auto mb-1" />
+                          <div className="font-bold text-lg leading-none text-white">
+                            {formatTime(defense.start_time).replace(/:\d\d /, ' ')}
+                          </div>
+                          <div className="text-[10px] font-mono text-slate-400 mt-0.5">
+                            {defense.estimated_duration_minutes || 120} min
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="text-xs font-mono font-bold text-slate-900">
+                            {formatTime(defense.start_time)} a {formatTime(defense.estimated_end_time)}
+                          </div>
+                          <div className="text-xs font-mono text-slate-500 flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[150px]">
+                              {defense.space?.name || defense.modality}
+                            </span>
+                          </div>
+                          <span className="inline-block border border-slate-300 bg-slate-100 text-slate-800 text-[10px] font-mono uppercase font-bold px-1.5 py-0.2 rounded-sm">
+                            {defense.modality}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Middle Thesis Details */}
+                      <div className="flex-1 space-y-2 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-white bg-[#091E3A] px-2 py-0.5 rounded-sm">
+                            {defense.code}
+                          </span>
+                          <StatusBadge status={defense.status} />
+                          <span className="text-xs font-mono font-bold text-slate-600 uppercase">
+                            {defense.unit?.acronym ? `[${defense.unit.acronym}]` : ''} {defense.unit?.name}
+                          </span>
+                        </div>
+
+                        <h3 className="text-base sm:text-lg font-bold text-slate-950 leading-snug">
+                          {defense.title}
+                        </h3>
+
+                        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-600 font-sans">
+                          <div className="flex items-center gap-1.5">
+                            <GraduationCap className="h-4 w-4 text-slate-700 shrink-0" />
+                            <span>
+                              <strong className="text-slate-900 font-semibold">Sustentante:</strong>{' '}
+                              {students.length > 0
+                                ? students.map((s) => `${s.person.first_name} ${s.person.last_name}`).join(', ')
+                                : 'No especificado'}
+                            </span>
+                          </div>
+
+                          {advisors.length > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-400">•</span>
+                              <span>
+                                <strong className="text-slate-900 font-semibold">Asesor:</strong>{' '}
+                                {advisors.map((a) => `${a.person.first_name} ${a.person.last_name}`).join(', ')}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400">•</span>
+                            <span>
+                              <strong className="text-slate-900 font-semibold">Jurado:</strong>{' '}
+                              {jurors.length} miembros
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Action */}
+                      <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-sm border-2 border-slate-900 hover:bg-[#091E3A] hover:text-white text-xs font-bold uppercase tracking-wider h-9"
+                        >
+                          Ver Ficha
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       ) : (
-        /* List Mode View - Editorial Brutalist Cards with subtle rounded-sm */
+        /* ========================================================================= */
+        /* 3. BESPOKE CHRONOLOGICAL AGENDA LIST VIEW (Editorial Brutalist Cards)      */
+        /* ========================================================================= */
         <div className="space-y-3">
           {filteredDefenses.length === 0 ? (
             <div className="p-16 text-center bg-white border-2 border-slate-900 rounded-sm">
-              <div className="font-anton text-2xl text-slate-800 uppercase">
+              <div className="font-bold text-xl text-slate-800 uppercase">
                 NO HAY SUSTENTACIONES REGISTRADAS CON ESTOS FILTROS
               </div>
               <p className="text-xs font-mono text-slate-500 mt-2 uppercase">
@@ -408,7 +828,7 @@ export const PublicAgendaPage: React.FC = () => {
                         <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest leading-none">
                           {weekdayStr}
                         </div>
-                        <div className="font-anton text-3xl sm:text-4xl text-white leading-none my-1">
+                        <div className="font-bold text-2xl sm:text-3xl text-white leading-none my-1">
                           {dayStr}
                         </div>
                         <div className="text-[11px] font-mono text-slate-300 font-bold leading-none">
@@ -517,7 +937,7 @@ export const PublicAgendaPage: React.FC = () => {
                   {selectedDefense.unit?.acronym || selectedDefense.unit?.name}
                 </span>
               </div>
-              <h2 className="font-anton text-2xl sm:text-3xl text-white uppercase leading-tight tracking-tight">
+              <h2 className="font-bold text-xl sm:text-2xl text-white uppercase leading-tight tracking-tight">
                 {selectedDefense.title}
               </h2>
               <div className="text-xs font-mono text-slate-400 mt-2 uppercase">

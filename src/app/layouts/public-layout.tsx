@@ -31,12 +31,12 @@ export const PublicLayout: React.FC = () => {
       <header className="bg-white border-b-2 border-[#091E3A] sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 bg-[#091E3A] text-amber-400 flex items-center justify-center font-anton text-2xl border-2 border-amber-400 shrink-0 rounded-sm">
+            <div className="h-11 w-11 bg-[#091E3A] text-amber-400 flex items-center justify-center font-bold text-xl border-2 border-amber-400 shrink-0 rounded-sm">
               EPG
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl sm:text-3xl font-anton text-[#091E3A] uppercase tracking-tight leading-none">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#091E3A] uppercase tracking-tight leading-none">
                   Agenda de Sustentaciones
                 </h1>
                 <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-amber-400 text-slate-950 uppercase border border-amber-500 rounded-sm">
@@ -75,7 +75,7 @@ export const PublicLayout: React.FC = () => {
       <footer className="bg-[#091E3A] text-slate-400 text-xs py-8 border-t-2 border-amber-400 mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
-            <div className="font-anton text-white text-xl uppercase tracking-wider">
+            <div className="font-bold text-white text-lg uppercase tracking-wider">
               Escuela de Postgrado — UNAP
             </div>
             <div className="mt-1 flex items-center justify-center md:justify-start gap-1.5 text-slate-300">

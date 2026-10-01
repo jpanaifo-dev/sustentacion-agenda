@@ -34,7 +34,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 213 72% 26%;
 
-    --radius: 0.125rem;
+    --radius: 0.25rem;
   }
 
   .dark {
@@ -70,10 +70,8 @@
 
 @layer utilities {
   .font-anton {
-    font-family: "Anton", "Arial Narrow", sans-serif;
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    line-height: 0.9;
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
   }
 }
 
@@ -83,14 +81,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Poppins", sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
   }
 }
 
-/* FullCalendar Strict Architectural & Flat Styling - No Gradients, No Shadows, Sharp Corners */
+/* FullCalendar Institutional & Harmonious Styling */
 .fc {
-  font-family: inherit;
+  font-family: "Poppins", sans-serif;
   --fc-border-color: #cbd5e1;
   --fc-button-text-color: #ffffff;
   --fc-button-bg-color: #091e3a;
@@ -109,17 +108,16 @@
 }
 
 .fc .fc-toolbar-title {
-  font-family: "Anton", "Arial Narrow", sans-serif !important;
-  font-weight: 400 !important;
-  letter-spacing: -0.02em !important;
-  font-size: 1.75rem !important;
-  line-height: 0.9 !important;
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  font-size: 1.5rem !important;
   color: #091e3a !important;
   text-transform: uppercase;
 }
 
 .fc .fc-button {
-  border-radius: 2px !important;
+  border-radius: 0.25rem !important;
   box-shadow: none !important;
   text-shadow: none !important;
   font-weight: 600 !important;
@@ -144,7 +142,7 @@
   font-size: 0.75rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
+  letter-spacing: 0.05em !important;
   border: 1px solid #1e293b !important;
 }
 
@@ -154,15 +152,16 @@
 }
 
 .fc-daygrid-day-number {
-  font-family: "Anton", "Arial Narrow", sans-serif;
-  font-size: 1.15rem;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
   line-height: 1;
   color: #0f172a;
   padding: 6px 8px !important;
 }
 
 .fc-event {
-  border-radius: 2px !important;
+  border-radius: 0.25rem !important;
   box-shadow: none !important;
   border-width: 1px !important;
   padding: 3px 5px !important;

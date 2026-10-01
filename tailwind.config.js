@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        anton: ['"Anton"', '"Arial Narrow"', 'sans-serif'],
+        sans: ['"Poppins"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        poppins: ['"Poppins"', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
@@ -66,9 +66,14 @@ export default {
         }
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        none: '0px',
+        sm: '0.25rem', // 4px agradable y suave
+        DEFAULT: '0.375rem',
+        md: '0.375rem', // 6px
+        lg: '0.5rem', // 8px
+        xl: '0.75rem',
+        '2xl': '1rem',
+        full: '9999px',
       },
     },
   },
