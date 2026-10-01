@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { defensesService } from '../../services/defenses.service';
 import { unitsService } from '../../services/units.service';
@@ -14,11 +14,14 @@ import {
   Search,
   Users,
   Video,
-  Building2,
-  Filter,
   List,
   CalendarDays,
   ExternalLink,
+  RotateCcw,
+  CheckCircle2,
+  Building,
+  GraduationCap,
+  Sparkles,
 } from 'lucide-react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -33,10 +36,24 @@ import {
   DialogDescription,
 } from '../../components/ui/dialog';
 
+function parseDateParts(dateStr: string) {
+  try {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const dayStr = String(day).padStart(2, '0');
+    const monthStr = date.toLocaleString('es-PE', { month: 'short' }).toUpperCase().replace('.', '');
+    const weekdayStr = date.toLocaleString('es-PE', { weekday: 'short' }).toUpperCase().replace('.', '');
+    return { dayStr, monthStr, weekdayStr, year };
+  } catch {
+    return { dayStr: '--', monthStr: '---', weekdayStr: '---', year: '' };
+  }
+}
+
 export const PublicAgendaPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [search, setSearch] = useState('');
   const [selectedUnit, setSelectedUnit] = useState<string>('ALL');
+  const [selectedModality, setSelectedModality] = useState<string>('ALL');
   const [selectedDefense, setSelectedDefense] = useState<DefenseWithRelations | null>(null);
 
   const { data: defenses = [], isLoading: isLoadingDefenses } = useQuery({
@@ -50,122 +67,283 @@ export const PublicAgendaPage: React.FC = () => {
   });
 
   // Filtered public defenses
-  const filteredDefenses = defenses.filter((d) => {
-    if (selectedUnit !== 'ALL' && d.unit_id !== selectedUnit) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      const codeMatch = d.code?.toLowerCase().includes(q);
-      const titleMatch = d.title.toLowerCase().includes(q);
-      const studentMatch = d.participants?.some(
-        (p) =>
-          p.participant_type === 'STUDENT' &&
-          `${p.person.first_name} ${p.person.last_name}`.toLowerCase().includes(q)
-      );
-      if (!codeMatch && !titleMatch && !studentMatch) return false;
-    }
-    return true;
-  });
+  const filteredDefenses = useMemo(() => {
+    return defenses.filter((d) => {
+      if (selectedUnit !== 'ALL' && d.unit_id !== selectedUnit) return false;
+      if (selectedModality !== 'ALL' && d.modality !== selectedModality) return false;
+      if (search) {
+        const q = search.toLowerCase().trim();
+        const codeMatch = d.code?.toLowerCase().includes(q);
+        const titleMatch = d.title.toLowerCase().includes(q);
+        const studentMatch = d.participants?.some(
+          (p) =>
+            p.participant_type === 'STUDENT' &&
+            `${p.person.first_name} ${p.person.last_name}`.toLowerCase().includes(q)
+        );
+        if (!codeMatch && !titleMatch && !studentMatch) return false;
+      }
+      return true;
+    });
+  }, [defenses, selectedUnit, selectedModality, search]);
+
+  // Statistics counters
+  const stats = useMemo(() => {
+    const total = defenses.length;
+    const confirmed = defenses.filter((d) => d.status === 'CONFIRMED').length;
+    const virtual = defenses.filter((d) => d.modality === 'VIRTUAL' || d.modality === 'HYBRID').length;
+    const presencial = defenses.filter((d) => d.modality === 'PRESENTIAL').length;
+    return { total, confirmed, virtual, presencial };
+  }, [defenses]);
 
   // Prepare events for FullCalendar
-  const calendarEvents = filteredDefenses.map((d) => {
-    const student = d.participants?.find((p) => p.participant_type === 'STUDENT');
-    const studentName = student ? ` - ${student.person.first_name} ${student.person.last_name}` : '';
+  const calendarEvents = useMemo(() => {
+    return filteredDefenses.map((d) => {
+      const student = d.participants?.find((p) => p.participant_type === 'STUDENT');
+      const studentName = student ? ` (${student.person.first_name} ${student.person.last_name})` : '';
 
-    let color = '#0B2545';
-    if (d.status === 'CONFIRMED') color = '#047857';
-    if (d.status === 'RESCHEDULED') color = '#1D4ED8';
-    if (d.status === 'COMPLETED') color = '#6D28D9';
+      let color = '#091E3A';
+      if (d.status === 'CONFIRMED') color = '#047857';
+      if (d.status === 'RESCHEDULED') color = '#1D4ED8';
+      if (d.status === 'COMPLETED') color = '#581C87';
 
-    return {
-      id: d.id,
-      title: `${d.code}: ${d.title}${studentName}`,
-      start: `${d.scheduled_date}T${d.start_time}`,
-      end: `${d.scheduled_date}T${d.estimated_end_time}`,
-      backgroundColor: color,
-      borderColor: color,
-      textColor: '#ffffff',
-      extendedProps: { defense: d },
-    };
-  });
+      return {
+        id: d.id,
+        title: `${d.code} · ${d.title}${studentName}`,
+        start: `${d.scheduled_date}T${d.start_time}`,
+        end: `${d.scheduled_date}T${d.estimated_end_time}`,
+        backgroundColor: color,
+        borderColor: '#000000',
+        textColor: '#FFFFFF',
+        extendedProps: { defense: d },
+      };
+    });
+  }, [filteredDefenses]);
+
+  const resetFilters = () => {
+    setSearch('');
+    setSelectedUnit('ALL');
+    setSelectedModality('ALL');
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Intro Hero Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#0B2545] via-[#091E3A] to-[#134E4A] p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
-        <div className="max-w-2xl relative z-10">
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-400 text-slate-950 mb-3">
-            Programación Oficial EPG UNAP
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Agenda Institucional de Sustentaciones
-          </h2>
-          <p className="mt-2 text-sm text-slate-200 leading-relaxed">
-            Consulte las sustentaciones de tesis y defensas de grado programadas para maestrías y doctorados de la Universidad Nacional de la Amazonía Peruana.
+    <div className="space-y-6 w-full pb-12">
+      {/* Editorial High-Impact Hero Banner */}
+      <section className="bg-[#091E3A] border-2 border-[#091E3A] text-white p-6 sm:p-10 relative overflow-hidden">
+        {/* Solid architectural accent line */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#C59B27]" />
+
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="space-y-3 max-w-4xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-[#C59B27] text-slate-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider">
+                UNAP · EPG
+              </span>
+              <span className="border border-slate-700 bg-slate-900/80 text-slate-300 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider">
+                PROGRAMACIÓN PÚBLICA OFICIAL
+              </span>
+              <span className="border border-emerald-500/50 bg-emerald-950/60 text-emerald-300 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1">
+                <span className="h-1.5 w-1.5 bg-emerald-400 inline-block animate-pulse" />
+                EN TIEMPO REAL
+              </span>
+            </div>
+
+            <h1 className="font-anton text-4xl sm:text-6xl lg:text-7xl uppercase text-white tracking-tight leading-[0.9]">
+              AGENDA DE SUSTENTACIONES
+            </h1>
+
+            <p className="text-sm sm:text-base text-slate-300 font-sans max-w-3xl leading-relaxed pt-1">
+              Registro público y oficial de sustentaciones de tesis de maestría y defensas doctorales de la Escuela de Postgrado de la Universidad Nacional de la Amazonía Peruana.
+            </p>
+          </div>
+
+          {/* Metric KPI Block strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 lg:gap-3 shrink-0">
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                TOTAL AGENDA
+              </div>
+              <div className="font-anton text-3xl sm:text-4xl text-white mt-1 leading-none">
+                {stats.total.toString().padStart(2, '0')}
+              </div>
+              <div className="text-[10px] font-mono text-amber-400 mt-1 uppercase">
+                Actos Académicos
+              </div>
+            </div>
+
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                CONFIRMADAS
+              </div>
+              <div className="font-anton text-3xl sm:text-4xl text-emerald-400 mt-1 leading-none">
+                {stats.confirmed.toString().padStart(2, '0')}
+              </div>
+              <div className="text-[10px] font-mono text-emerald-300 mt-1 uppercase">
+                Listas para acto
+              </div>
+            </div>
+
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                PRESENCIALES
+              </div>
+              <div className="font-anton text-3xl sm:text-4xl text-blue-400 mt-1 leading-none">
+                {stats.presencial.toString().padStart(2, '0')}
+              </div>
+              <div className="text-[10px] font-mono text-slate-400 mt-1 uppercase">
+                Auditorios UNAP
+              </div>
+            </div>
+
+            <div className="bg-[#061528] border border-slate-800 p-3 sm:p-4 min-w-[120px]">
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                VIRTUAL / HÍBRIDA
+              </div>
+              <div className="font-anton text-3xl sm:text-4xl text-amber-300 mt-1 leading-none">
+                {stats.virtual.toString().padStart(2, '0')}
+              </div>
+              <div className="text-[10px] font-mono text-slate-400 mt-1 uppercase">
+                Acceso en línea
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Control & Filter Strip - Sharp 90° corners, zero shadows */}
+      <section className="bg-white border-2 border-slate-900 p-4 sm:p-5">
+        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+          {/* Search and Unit filters */}
+          <div className="flex flex-1 flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
+              <Input
+                placeholder="Buscar por tesis, código, tesista..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10 rounded-none border border-slate-300 bg-slate-50 text-slate-900 text-xs sm:text-sm font-medium focus:border-slate-900 focus:bg-white"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-900 font-mono"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Unit Selector */}
+            <div className="sm:w-72">
+              <select
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="w-full h-10 rounded-none border border-slate-300 bg-slate-50 px-3 text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white cursor-pointer"
+              >
+                <option value="ALL">TODAS LAS UNIDADES DE POSGRADO</option>
+                {units.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.acronym ? `[${u.acronym}] ${u.name}` : u.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Modality Selector */}
+            <div className="sm:w-44">
+              <select
+                value={selectedModality}
+                onChange={(e) => setSelectedModality(e.target.value)}
+                className="w-full h-10 rounded-none border border-slate-300 bg-slate-50 px-3 text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white cursor-pointer uppercase"
+              >
+                <option value="ALL">MODALIDAD: TODAS</option>
+                <option value="PRESENTIAL">PRESENCIAL</option>
+                <option value="VIRTUAL">VIRTUAL</option>
+                <option value="HYBRID">HÍBRIDA</option>
+              </select>
+            </div>
+
+            {(search || selectedUnit !== 'ALL' || selectedModality !== 'ALL') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                className="h-10 px-3 rounded-none border border-slate-300 text-slate-600 hover:text-slate-900 text-xs font-mono uppercase"
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                Limpiar
+              </Button>
+            )}
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 border-2 border-slate-900 p-0.5 bg-slate-100 self-start sm:self-auto shrink-0">
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-[#091E3A] text-amber-400 border border-[#091E3A]'
+                  : 'bg-transparent text-slate-700 hover:text-slate-900'
+              }`}
+            >
+              <CalendarDays className="h-4 w-4" />
+              <span>Calendario</span>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-[#091E3A] text-amber-400 border border-[#091E3A]'
+                  : 'bg-transparent text-slate-700 hover:text-slate-900'
+              }`}
+            >
+              <List className="h-4 w-4" />
+              <span>Listado ({filteredDefenses.length})</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area */}
+      {isLoadingDefenses ? (
+        <div className="p-16 text-center bg-white border-2 border-slate-900">
+          <div className="font-anton text-2xl text-slate-800 uppercase tracking-tight">
+            CARGANDO PROGRAMACIÓN INSTITUCIONAL...
+          </div>
+          <p className="text-xs font-mono text-slate-500 mt-2 uppercase">
+            Sincronizando con base de datos de la Escuela de Postgrado UNAP
           </p>
         </div>
-      </div>
-
-      {/* Filter and Control Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-        <div className="flex flex-1 flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-          {/* Search box */}
-          <div className="relative flex-1">
-            <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
-            <Input
-              placeholder="Buscar por tesis, código o sustentante..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs sm:text-sm bg-slate-50 border-slate-200"
-            />
-          </div>
-
-          {/* Unit dropdown */}
-          <div className="sm:w-64">
-            <select
-              value={selectedUnit}
-              onChange={(e) => setSelectedUnit(e.target.value)}
-              className="w-full h-9 rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-unap-navy"
-            >
-              <option value="ALL">Todas las Unidades de Posgrado</option>
-              {units.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.acronym ? `[${u.acronym}] ${u.name}` : u.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* View toggle */}
-        <div className="flex items-center gap-1.5 self-end sm:self-center border border-slate-200 rounded-lg p-1 bg-slate-50">
-          <Button
-            size="sm"
-            variant={viewMode === 'calendar' ? 'unap' : 'ghost'}
-            className="h-7 text-xs px-2.5 gap-1.5"
-            onClick={() => setViewMode('calendar')}
-          >
-            <CalendarDays className="h-3.5 w-3.5" />
-            <span>Calendario</span>
-          </Button>
-          <Button
-            size="sm"
-            variant={viewMode === 'list' ? 'unap' : 'ghost'}
-            className="h-7 text-xs px-2.5 gap-1.5"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="h-3.5 w-3.5" />
-            <span>Listado</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Main View Area */}
-      {isLoadingDefenses ? (
-        <div className="p-12 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
-          Cargando agenda de sustentaciones...
-        </div>
       ) : viewMode === 'calendar' ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm overflow-hidden">
+        <div className="bg-white border-2 border-slate-900 p-4 sm:p-6">
+          {/* Calendar Header Indicator */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b-2 border-slate-200 gap-2">
+            <div>
+              <h2 className="font-anton text-2xl sm:text-3xl uppercase text-[#091E3A] leading-none">
+                VISTA CALENDARIO MENSUAL / SEMANAL
+              </h2>
+              <p className="text-xs font-mono text-slate-500 uppercase mt-0.5">
+                Haga clic sobre cualquier evento para consultar el jurado, lugar o sala virtual
+              </p>
+            </div>
+
+            {/* Quick legend */}
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-emerald-600 bg-emerald-50 text-emerald-950 font-bold">
+                <span className="h-2 w-2 bg-emerald-600" /> CONFIRMADA
+              </span>
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-blue-600 bg-blue-50 text-blue-950 font-bold">
+                <span className="h-2 w-2 bg-blue-600" /> REPROGRAMADA
+              </span>
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-purple-600 bg-purple-50 text-purple-950 font-bold">
+                <span className="h-2 w-2 bg-purple-600" /> COMPLETADA
+              </span>
+              <span className="flex items-center gap-1.5 px-2 py-0.5 border border-slate-800 bg-slate-100 text-slate-900 font-bold">
+                <span className="h-2 w-2 bg-[#091E3A]" /> PROGRAMADA
+              </span>
+            </div>
+          </div>
+
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
             initialView="dayGridMonth"
@@ -191,66 +369,132 @@ export const PublicAgendaPage: React.FC = () => {
           />
         </div>
       ) : (
-        /* List Mode View */
-        <div className="space-y-4">
+        /* List Mode View - Editorial Brutalist Cards */
+        <div className="space-y-3">
           {filteredDefenses.length === 0 ? (
-            <div className="p-12 text-center bg-white rounded-xl border border-slate-200 text-slate-500">
-              No se encontraron sustentaciones programadas con los filtros seleccionados.
+            <div className="p-16 text-center bg-white border-2 border-slate-900">
+              <div className="font-anton text-2xl text-slate-800 uppercase">
+                NO HAY SUSTENTACIONES REGISTRADAS CON ESTOS FILTROS
+              </div>
+              <p className="text-xs font-mono text-slate-500 mt-2 uppercase">
+                Pruebe seleccionando otra unidad académica o quitando los términos de búsqueda.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                className="mt-4 rounded-none border-2 border-slate-900 font-mono text-xs uppercase"
+              >
+                Restablecer Filtros
+              </Button>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {filteredDefenses.map((defense) => {
                 const students = (defense.participants || []).filter((p) => p.participant_type === 'STUDENT');
+                const jurors = (defense.participants || []).filter((p) => p.participant_type === 'JUROR');
+                const advisors = (defense.participants || []).filter((p) => p.participant_type === 'ADVISOR');
+                const { dayStr, monthStr, weekdayStr, year } = parseDateParts(defense.scheduled_date);
 
                 return (
-                  <div
+                  <article
                     key={defense.id}
                     onClick={() => setSelectedDefense(defense)}
-                    className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-slate-300 hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="bg-white border-2 border-slate-200 hover:border-[#091E3A] transition-colors cursor-pointer p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                   >
-                    <div className="space-y-2 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-unap-navy bg-slate-100 px-2 py-0.5 rounded">
-                          {defense.code}
-                        </span>
-                        <StatusBadge status={defense.status} />
-                        <span className="text-xs text-slate-500 font-medium">
-                          {defense.unit?.acronym || defense.unit?.name}
-                        </span>
+                    {/* Left Date Block */}
+                    <div className="flex items-center gap-4 sm:gap-6 border-b lg:border-b-0 lg:border-r border-slate-200 pb-3 lg:pb-0 lg:pr-6 shrink-0">
+                      <div className="bg-[#091E3A] text-white p-2.5 sm:p-3 text-center min-w-[76px] sm:min-w-[84px] border-2 border-[#091E3A]">
+                        <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest leading-none">
+                          {weekdayStr}
+                        </div>
+                        <div className="font-anton text-3xl sm:text-4xl text-white leading-none my-1">
+                          {dayStr}
+                        </div>
+                        <div className="text-[11px] font-mono text-slate-300 font-bold leading-none">
+                          {monthStr} {year}
+                        </div>
                       </div>
 
-                      <h3 className="text-base font-semibold text-slate-900 leading-snug">
-                        {defense.title}
-                      </h3>
-
-                      <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-600">
-                        <div className="flex items-center gap-1">
-                          <CalendarIcon className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{formatDate(defense.scheduled_date)}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{formatTime(defense.start_time)} - {formatTime(defense.estimated_end_time)}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{defense.space?.name || defense.modality}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5 text-slate-400" />
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-900">
+                          <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                           <span>
-                            Sustentante(s): {students.map((s) => `${s.person.first_name} ${s.person.last_name}`).join(', ')}
+                            {formatTime(defense.start_time)} – {formatTime(defense.estimated_end_time)}
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-mono text-slate-600 uppercase flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                          <span className="truncate max-w-[200px]">
+                            {defense.space?.name || defense.facility?.name || defense.modality}
+                          </span>
+                        </div>
+                        <div className="pt-0.5">
+                          <span className="inline-block border border-slate-300 bg-slate-100 text-slate-700 text-[10px] font-mono uppercase font-bold px-1.5 py-0.2">
+                            MODALIDAD: {defense.modality}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Ver Detalle
+                    {/* Middle Core Thesis Info */}
+                    <div className="flex-1 space-y-2 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-white bg-[#091E3A] px-2 py-0.5 border border-[#091E3A]">
+                          {defense.code}
+                        </span>
+                        <StatusBadge status={defense.status} />
+                        <span className="text-xs font-mono font-bold text-slate-600 uppercase tracking-wide">
+                          {defense.unit?.acronym ? `[${defense.unit.acronym}]` : ''} {defense.unit?.name}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base sm:text-lg font-bold text-slate-950 leading-snug tracking-tight">
+                        {defense.title}
+                      </h3>
+
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-600 font-sans">
+                        <div className="flex items-center gap-1.5">
+                          <GraduationCap className="h-4 w-4 text-slate-700 shrink-0" />
+                          <span>
+                            <strong className="text-slate-900 font-semibold">Sustentante:</strong>{' '}
+                            {students.length > 0
+                              ? students.map((s) => `${s.person.first_name} ${s.person.last_name}`).join(', ')
+                              : 'No especificado'}
+                          </span>
+                        </div>
+
+                        {advisors.length > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400">•</span>
+                            <span>
+                              <strong className="text-slate-900 font-semibold">Asesor:</strong>{' '}
+                              {advisors.map((a) => `${a.person.first_name} ${a.person.last_name}`).join(', ')}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-400">•</span>
+                          <span>
+                            <strong className="text-slate-900 font-semibold">Jurado:</strong>{' '}
+                            {jurors.length} miembros
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Action Button */}
+                    <div className="flex items-center gap-2 self-end lg:self-center shrink-0 pt-2 lg:pt-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none border-2 border-slate-900 hover:bg-slate-900 hover:text-white text-xs font-bold uppercase tracking-wider h-9"
+                      >
+                        Ver Ficha Completa
                       </Button>
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
@@ -258,107 +502,146 @@ export const PublicAgendaPage: React.FC = () => {
         </div>
       )}
 
-      {/* Public Defense Detail Modal */}
+      {/* Public Defense Detail Modal - Sharp architectural layout */}
       {selectedDefense && (
         <Dialog open={!!selectedDefense} onOpenChange={() => setSelectedDefense(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-mono text-xs font-bold text-unap-navy bg-slate-100 px-2 py-0.5 rounded">
+          <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0 rounded-none border-2 border-slate-900 bg-white">
+            {/* Modal Header */}
+            <div className="bg-[#091E3A] text-white p-5 border-b-2 border-amber-400">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="font-mono text-xs font-bold bg-amber-400 text-slate-950 px-2 py-0.5 uppercase">
                   {selectedDefense.code}
                 </span>
                 <StatusBadge status={selectedDefense.status} />
+                <span className="font-mono text-xs text-slate-300 uppercase">
+                  {selectedDefense.unit?.acronym || selectedDefense.unit?.name}
+                </span>
               </div>
-              <DialogTitle className="text-lg font-bold text-slate-900 leading-snug">
+              <h2 className="font-anton text-2xl sm:text-3xl text-white uppercase leading-tight tracking-tight">
                 {selectedDefense.title}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
-                {selectedDefense.unit?.name}
-              </DialogDescription>
-            </DialogHeader>
+              </h2>
+              <div className="text-xs font-mono text-slate-400 mt-2 uppercase">
+                {selectedDefense.unit?.name} · Escuela de Postgrado UNAP
+              </div>
+            </div>
 
-            <div className="mt-4 space-y-5 text-sm">
-              {/* Programación */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-lg border border-slate-100">
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Fecha Programada</div>
-                  <div className="font-semibold text-slate-900 mt-0.5">
-                    {formatDate(selectedDefense.scheduled_date)}
-                  </div>
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Programación & Sede Grid */}
+              <div>
+                <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
+                  DATOS DE CONVOCATORIA Y LOGÍSTICA
                 </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Horario de Sustentación</div>
-                  <div className="font-semibold text-slate-900 mt-0.5">
-                    {formatTime(selectedDefense.start_time)} a {formatTime(selectedDefense.estimated_end_time)}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 border border-slate-200">
+                  <div>
+                    <div className="text-[11px] font-mono text-slate-500 uppercase">Fecha</div>
+                    <div className="font-bold text-slate-950 text-sm mt-0.5">
+                      {formatDate(selectedDefense.scheduled_date)}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Modalidad</div>
-                  <div className="font-semibold text-slate-900 mt-0.5">
-                    {selectedDefense.modality}
+                  <div>
+                    <div className="text-[11px] font-mono text-slate-500 uppercase">Horario</div>
+                    <div className="font-bold text-slate-950 text-sm mt-0.5">
+                      {formatTime(selectedDefense.start_time)} – {formatTime(selectedDefense.estimated_end_time)}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Lugar / Espacio</div>
-                  <div className="font-semibold text-slate-900 mt-0.5">
-                    {selectedDefense.space?.name || 'Por definir'} ({selectedDefense.facility?.name || 'Sede Central'})
+                  <div>
+                    <div className="text-[11px] font-mono text-slate-500 uppercase">Modalidad</div>
+                    <div className="font-bold text-slate-950 text-sm mt-0.5 uppercase">
+                      {selectedDefense.modality}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-mono text-slate-500 uppercase">Lugar / Aula</div>
+                    <div className="font-bold text-slate-950 text-sm mt-0.5">
+                      {selectedDefense.space?.name || 'Por asignar'}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Virtual link if hybrid or virtual */}
+              {/* Virtual Access Box if virtual or hybrid */}
               {selectedDefense.virtual_url && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50/70 p-3 text-xs text-blue-900 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Video className="h-4 w-4 text-blue-700" />
-                    <span>Plataforma virtual: <strong>{selectedDefense.virtual_platform || 'Enlace oficial'}</strong></span>
+                <div className="border-2 border-blue-900 bg-blue-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-blue-900 text-white flex items-center justify-center shrink-0">
+                      <Video className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-mono font-bold uppercase text-blue-950">
+                        AUDIENCIA VIRTUAL DISPONIBLE
+                      </div>
+                      <div className="text-xs text-blue-800">
+                        Plataforma: <strong>{selectedDefense.virtual_platform || 'Enlace Oficial de Transmisión'}</strong>
+                      </div>
+                    </div>
                   </div>
                   <a
                     href={selectedDefense.virtual_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold uppercase tracking-wider border border-blue-900 transition-colors"
                   >
-                    <span>Ingresar</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <span>Ingresar a la Sala</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
               )}
 
               {/* Sustentantes */}
               <div>
-                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">
-                  Sustentante(s)
-                </h4>
-                <div className="space-y-1.5">
+                <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
+                  SUSTENTANTE(S) / CANDIDATO(S) AL GRADO
+                </div>
+                <div className="border border-slate-200 divide-y divide-slate-200">
                   {(selectedDefense.participants || [])
                     .filter((p) => p.participant_type === 'STUDENT')
                     .map((s) => (
-                      <div key={s.id} className="flex items-center gap-2 p-2 rounded bg-slate-50 border border-slate-100">
-                        <Users className="h-4 w-4 text-slate-400" />
-                        <span className="font-medium text-slate-900">
-                          {s.person.first_name} {s.person.last_name}
+                      <div key={s.id} className="p-3 bg-white flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <GraduationCap className="h-4 w-4 text-[#091E3A]" />
+                          <div>
+                            <span className="font-bold text-slate-900 text-sm">
+                              {s.person.first_name} {s.person.last_name}
+                            </span>
+                            {s.person.email && (
+                              <div className="text-xs font-mono text-slate-500">{s.person.email}</div>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-300 bg-slate-100 text-slate-800">
+                          Tesista
                         </span>
                       </div>
                     ))}
                 </div>
               </div>
 
-              {/* Jurados */}
+              {/* Jurado Calificador */}
               <div>
-                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">
-                  Jurado Calificador
-                </h4>
-                <div className="space-y-1.5">
+                <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
+                  JURADO CALIFICADOR DESIGNADO
+                </div>
+                <div className="border border-slate-200 divide-y divide-slate-200">
                   {(selectedDefense.participants || [])
                     .filter((p) => p.participant_type === 'JUROR')
                     .map((j) => (
-                      <div key={j.id} className="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
-                        <span className="font-medium text-slate-900">
-                          {j.person.first_name} {j.person.last_name}
-                        </span>
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
-                          {j.role || 'Miembro'}
+                      <div key={j.id} className="p-3 bg-white flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <Users className="h-4 w-4 text-slate-600" />
+                          <div>
+                            <span className="font-bold text-slate-900 text-sm">
+                              {j.person.first_name} {j.person.last_name}
+                            </span>
+                            {j.person.institution && (
+                              <div className="text-xs font-mono text-slate-500">
+                                {j.person.institution}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-900 bg-slate-900 text-amber-300">
+                          {j.role || 'Miembro de Jurado'}
                         </span>
                       </div>
                     ))}
@@ -368,22 +651,37 @@ export const PublicAgendaPage: React.FC = () => {
               {/* Asesores */}
               {(selectedDefense.participants || []).some((p) => p.participant_type === 'ADVISOR') && (
                 <div>
-                  <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">
-                    Asesor(a) de Tesis
-                  </h4>
-                  <div className="space-y-1.5">
+                  <div className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
+                    ASESOR(A) DE TESIS
+                  </div>
+                  <div className="border border-slate-200 divide-y divide-slate-200">
                     {(selectedDefense.participants || [])
                       .filter((p) => p.participant_type === 'ADVISOR')
                       .map((a) => (
-                        <div key={a.id} className="p-2 rounded bg-slate-50 border border-slate-100">
-                          <span className="font-medium text-slate-900">
+                        <div key={a.id} className="p-3 bg-white flex items-center justify-between">
+                          <span className="font-bold text-slate-900 text-sm">
                             {a.person.first_name} {a.person.last_name}
+                          </span>
+                          <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 border border-slate-300 bg-slate-100 text-slate-800">
+                            Asesor Principal
                           </span>
                         </div>
                       ))}
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDefense(null)}
+                className="rounded-none border-2 border-slate-900 text-xs font-mono uppercase font-bold"
+              >
+                Cerrar Detalle
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
