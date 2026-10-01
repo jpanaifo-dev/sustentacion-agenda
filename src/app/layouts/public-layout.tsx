@@ -10,9 +10,9 @@ export const PublicLayout: React.FC = () => {
       <div className="bg-[#091E3A] text-slate-300 text-xs py-2 px-4 sm:px-6 lg:px-8 border-b border-slate-800">
         <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-white tracking-wide">UNIVERSIDAD NACIONAL DE LA AMAZONÍA PERUANA</span>
+            <span className="font-medium text-white tracking-wide">UNIVERSIDAD NACIONAL DE LA AMAZONÍA PERUANA</span>
             <span className="hidden sm:inline text-slate-600">/</span>
-            <span className="text-amber-400 font-bold uppercase tracking-wider text-[11px]">ESCUELA DE POSTGRADO</span>
+            <span className="text-amber-400 font-medium uppercase tracking-wider text-[11px]">ESCUELA DE POSTGRADO</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
             <span className="hidden md:inline text-slate-400">Iquitos, Loreto — Perú</span>
@@ -28,35 +28,35 @@ export const PublicLayout: React.FC = () => {
       </div>
 
       {/* Main Institutional Header */}
-      <header className="bg-white border-b-2 border-[#091E3A] sticky top-0 z-40">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 bg-[#091E3A] text-amber-400 flex items-center justify-center font-bold text-xl border-2 border-amber-400 shrink-0 rounded-sm">
+            <div className="h-10 w-10 bg-[#091E3A] text-amber-400 flex items-center justify-center font-semibold text-lg border border-amber-400 shrink-0 rounded-sm">
               EPG
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#091E3A] uppercase tracking-tight leading-none">
+                <h1 className="text-lg sm:text-xl font-semibold text-[#091E3A] uppercase tracking-tight leading-none">
                   Agenda de Sustentaciones
                 </h1>
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-amber-400 text-slate-950 uppercase border border-amber-500 rounded-sm">
+                <span className="px-2 py-0.5 text-[10px] font-mono font-medium bg-amber-400 text-slate-950 uppercase border border-amber-500 rounded-sm">
                   OFICIAL
                 </span>
               </div>
-              <p className="text-xs text-slate-600 mt-1 font-mono">
+              <p className="text-xs text-slate-500 mt-1 font-mono">
                 SISTEMA PÚBLICO DE PROGRAMACIÓN DE DEFENSAS DE GRADO — UNAP
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-sm border-2 border-slate-300 hover:border-[#091E3A] text-xs h-9 font-semibold uppercase tracking-wider">
+            <Button asChild variant="outline" size="sm" className="rounded-sm border border-slate-300 hover:border-[#091E3A] text-xs h-9 font-medium uppercase tracking-wider">
               <NavLink to="/agenda">
                 <Calendar className="h-3.5 w-3.5 mr-1.5" />
                 <span>Ver Agenda</span>
               </NavLink>
             </Button>
-            <Button asChild variant="unap" size="sm" className="rounded-sm bg-[#091E3A] hover:bg-slate-900 border-2 border-[#091E3A] text-amber-400 text-xs h-9 font-semibold uppercase tracking-wider">
+            <Button asChild variant="unap" size="sm" className="rounded-sm bg-[#091E3A] hover:bg-slate-900 border border-[#091E3A] text-amber-400 text-xs h-9 font-medium uppercase tracking-wider">
               <NavLink to="/admin">
                 <Lock className="h-3.5 w-3.5 mr-1.5" />
                 <span>Panel Interno</span>
@@ -75,7 +75,7 @@ export const PublicLayout: React.FC = () => {
       <footer className="bg-[#091E3A] text-slate-400 text-xs py-8 border-t-2 border-amber-400 mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
-            <div className="font-bold text-white text-lg uppercase tracking-wider">
+            <div className="font-semibold text-white text-base uppercase tracking-wider">
               Escuela de Postgrado — UNAP
             </div>
             <div className="mt-1 flex items-center justify-center md:justify-start gap-1.5 text-slate-300">

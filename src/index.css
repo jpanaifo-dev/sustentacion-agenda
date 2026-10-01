@@ -71,7 +71,7 @@
 @layer utilities {
   .font-anton {
     font-family: "Poppins", sans-serif;
-    font-weight: 700;
+    font-weight: 600;
   }
 }
 
@@ -109,9 +109,9 @@
 
 .fc .fc-toolbar-title {
   font-family: "Poppins", sans-serif !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.01em !important;
-  font-size: 1.5rem !important;
+  font-size: 1.35rem !important;
   color: #091e3a !important;
   text-transform: uppercase;
 }
@@ -120,7 +120,7 @@
   border-radius: 0.25rem !important;
   box-shadow: none !important;
   text-shadow: none !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   font-size: 0.75rem !important;
   letter-spacing: 0.03em !important;
   text-transform: uppercase !important;
@@ -140,7 +140,7 @@
   background-color: #091e3a !important;
   color: #f8fafc !important;
   font-size: 0.75rem !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   border: 1px solid #1e293b !important;
@@ -153,8 +153,8 @@
 
 .fc-daygrid-day-number {
   font-family: "Poppins", sans-serif;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 500;
+  font-size: 0.95rem;
   line-height: 1;
   color: #0f172a;
   padding: 6px 8px !important;

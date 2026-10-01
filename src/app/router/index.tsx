@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PublicLayout } from '../layouts/public-layout';
 import { AdminLayout } from '../layouts/admin-layout';
 import { PublicAgendaPage } from '../../pages/public/public-agenda-page';
+import { PublicDefenseDetailPage } from '../../pages/public/public-defense-detail-page';
 import { DashboardPage } from '../../pages/private/dashboard-page';
 import { AgendaCalendarPage } from '../../pages/private/agenda/agenda-calendar-page';
 import { DefensesListPage } from '../../pages/private/defenses/defenses-list-page';
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
       {
         path: 'agenda',
         element: <PublicAgendaPage />,
+      },
+      {
+        path: 'agenda/:id',
+        element: <PublicDefenseDetailPage />,
       },
     ],
   },
